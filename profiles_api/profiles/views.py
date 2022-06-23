@@ -1,8 +1,14 @@
-from email import message
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from . import serializers
+from rest_framework import status, viewsets, filters
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.settings import api_settings
+
+from . import serializers, models, permissions
+
+
 
 # Create your views here.
 class HelloApiView(APIView):
@@ -46,3 +52,32 @@ class HelloApiView(APIView):
             'method': 'PATCH'
         })
 
+class HelloViewSet(viewsets.ViewSet):
+    """Test API ViewSet"""
+
+    def list(self, request):
+        a_viewset = [
+            'use actions ( list, create, retrieve, update, partial_update',
+            'automaticatly urls map usin ROUTERs',
+            'more functionality less code'
+        ]
+    
+        return Response({ 'message': 'hi', 'a_viewset': a_viewset})
+
+class UserProfileViewSets( viewsets.ModelViewSet ):
+
+    serializer_class = serializers.UserProfileSerializer
+    queryset = models.UserProfile.objects.all()
+    authentication_classes = ( TokenAuthentication, )
+    permission_classes = (permissions.UpdateOwnProfile, )
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('name', 'email',)
+
+class UserLoginApiView(ObtainAuthToken):
+    """To create tokens auth user"""
+    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
+
+class ProfileFeedViewSet( viewsets.ModelViewSet ):
+    """CRUD"""
+    authentication_classes = ( TokenAuthentication, )
+    serializer_class = serializers.ProfileFeedItemSerializer
